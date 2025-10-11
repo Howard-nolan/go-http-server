@@ -1,0 +1,18 @@
+# Build artifacts
+bin/
+build/
+dist/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Go
+*.test
+*.out
+coverage.*
+/vendor/
+
+# Editors/OS
+.DS_Store
+.vscode/
