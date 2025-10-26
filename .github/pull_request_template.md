@@ -1,14 +1,8 @@
-## Summary
-<!-- What this PR does in one paragraph -->
+## Change Summary:
+<!-- What changed and why (1–3 bullets or a short paragraph) -->
 
-## What I Learned
-- Why: <concept you clarified>
-- How: <the trick/approach that worked>
-- Gotcha: <pitfall you hit and fix>
-- Next time: <how you'll do it better>
+## How It Works:
+<!-- Briefly describe the approach/flow. Mention endpoints, data flow, key structs, retries, etc. -->
 
-## Demo / Evidence
-- curl/ screenshots / logs
-
-## Follow-ups
-- [ ] Small TODOs for later
+## Additional Notes (optional):
+<!-- Edge cases, tradeoffs, follow-ups, links to logs/metrics, screenshots -->
