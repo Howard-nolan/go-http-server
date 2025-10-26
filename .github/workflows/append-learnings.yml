@@ -1,0 +1,35 @@
+name: Append Learnings
+on:
+  pull_request:
+    types: [closed]
+jobs:
+  append:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract learning from PR body
+        id: extract
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.pull_request.body || "";
+            // Grab the section under "## What I Learned"
+            const match = body.match(/## What I Learned([\s\S]*?)(## |\Z)/);
+            const learned = match ? match[1].trim() : "";
+            core.setOutput("learned", learned);
+      - name: Update LEARNINGS.md
+        if: steps.extract.outputs.learned != ''
+        run: |
+          echo "" >> LEARNINGS.md
+          echo "## $(date +'%Y-%m-%d') — PR #${{ github.event.pull_request.number }} ${GITHUB_REPOSITORY}" >> LEARNINGS.md
+          echo "${{ steps.extract.outputs.learned }}" >> LEARNINGS.md
+          echo "" >> LEARNINGS.md
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add LEARNINGS.md
+          git commit -m "docs: append learnings from PR #${{ github.event.pull_request.number }}"
+          git push
