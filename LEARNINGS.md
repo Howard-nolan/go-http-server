@@ -8,3 +8,10 @@ Refined the GitHub workflow and PR template to simplify learning capture and ali
 Updated the PR template to use concise fields — *Change Summary*, *How It Works*, and *Additional Notes*.  
 Modified the workflow to extract those sections and append them to  under the header .
 
+
+## 2025-10-26 - PR #5: tweak github merge workflow
+
+**Change Summary:** <!-- What changed and why (1–3 bullets or a short paragraph) -->
+
+**How It Works:** <!-- Briefly describe the approach/flow. Mention endpoints, data flow, key structs, retries, etc. -->
+
