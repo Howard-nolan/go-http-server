@@ -8,3 +8,15 @@ Modified the workflow to extract those sections and append them to LEARNINGS.md.
 
 **Additional Notes:** Verified the new workflow syntax locally and ensured backward compatibility with existing entries.
 
+
+## 2025-11-05 - PR #10: Added Repo Scaffolding and Config File
+
+**Change Summary:** - Added initial project scaffold and /health endpoint.
+- Introduced config loading (PORT) and basic logger.
+- Implemented graceful shutdown with context and signal handling.
+
+**How It Works:** - main.go wires config, logger, and routes through a local ServeMux.
+- Server listens on configurable port and shuts down cleanly on SIGINT/SIGTERM.
+
+**Additional Notes:** - Foundation for future router, structured logs, and error handling in Phase 2.
+
