@@ -9,6 +9,9 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+
 	"github.com/joeynolan/go-http-server/internal/http/handlers"
 	"github.com/joeynolan/go-http-server/internal/platform/config"
 	ilog "github.com/joeynolan/go-http-server/internal/platform/log"
@@ -19,12 +22,18 @@ func main() {
 	cfg := config.Load()
 	logger := ilog.New()
 
-	mux := http.NewServeMux()
-	handlers.Register(mux)
+	r := chi.NewRouter()
+
+	r.Use(middleware.RequestID)
+	r.Use(middleware.RealIP)
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+
+	handlers.Register(r)
 
 	srv := &http.Server{
 		Addr:              fmt.Sprintf(":%d", cfg.Port),
-		Handler:           mux,
+		Handler:           r,
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
