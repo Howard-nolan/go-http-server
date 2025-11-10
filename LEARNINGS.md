@@ -20,3 +20,19 @@ Modified the workflow to extract those sections and append them to LEARNINGS.md.
 
 **Additional Notes:** - Foundation for future router, structured logs, and error handling in Phase 2.
 
+
+## 2025-11-10 - PR #12: Added Chi Routing, API Stubs
+
+**Change Summary:** - Added Chi router setup to handle API routes.
+- Created stub handlers for /v1/r/{code} and /v1/shorten endpoints to prepare for future URL redirection and shortening logic.
+- This sets the foundation for versioned API routing and future OpenAPI documentation integration.
+
+**How It Works:** - The server now initializes a Chi router in main.go, registering routes under /v1/.
+- GET /v1/r/{code} will later handle redirecting a short code to its target URL.
+- POST /v1/shorten will accept a long URL in the request body and return a shortened code.
+- Both endpoints currently return placeholder JSON responses to confirm routing is functional.
+
+**Additional Notes:** - Future work: implement persistence layer for shortened URLs (e.g., MongoDB, Redis).
+- Can easily extend versioning by adding additional route groups (e.g., /v2/).
+- No functional logic yet—this MR only sets up routing and scaffolding.
+
