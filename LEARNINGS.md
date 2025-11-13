@@ -36,3 +36,15 @@ Modified the workflow to extract those sections and append them to LEARNINGS.md.
 - Can easily extend versioning by adding additional route groups (e.g., /v2/).
 - No functional logic yet—this MR only sets up routing and scaffolding.
 
+
+## 2025-11-13 - PR #13: Added response.go, consistent error response
+
+**Change Summary:** - Added a response.go helper to centralize JSON response formatting.
+- Introduced a consistent JSON error shape used across all HTTP handlers.
+- Updated handlers to use shared helpers instead of writing responses inline.
+
+**How It Works:** - response.go has WriteJSON and WriteError functions
+
+**Additional Notes:** - Existing error responses have changed shape; any clients depending on the old error body format may need to be updated.
+- Follow-up: we can extend ErrorResponse with request IDs / correlation IDs or more structured error codes if needed.
+
