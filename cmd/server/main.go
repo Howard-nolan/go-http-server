@@ -12,7 +12,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
-	"github.com/joeynolan/go-http-server/internal/http/handlers"
+	apphttp "github.com/joeynolan/go-http-server/internal/http"
 	"github.com/joeynolan/go-http-server/internal/platform/config"
 	ilog "github.com/joeynolan/go-http-server/internal/platform/log"
 )
@@ -29,7 +29,7 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	handlers.Register(r)
+	apphttp.Register(r)
 
 	srv := &http.Server{
 		Addr:              fmt.Sprintf(":%d", cfg.Port),
