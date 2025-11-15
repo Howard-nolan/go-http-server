@@ -54,9 +54,9 @@ jobs:
             const header = `## ${today} - PR #${pr.number}: ${pr.title}`;
 
             let entry = `${header}\n\n`;
-            if (changeSummary) entry += `**Change Summary:** ${changeSummary}\n\n`;
-            if (howItWorks)    entry += `**How It Works:** ${howItWorks}\n\n`;
-            if (notes)         entry += `**Additional Notes:** ${notes}\n\n`;
+            if (changeSummary) entry += `**Change Summary:**\n${changeSummary}\n\n`;
+            if (howItWorks)    entry += `**How It Works:**\n${howItWorks}\n\n`;
+            if (notes)         entry += `**Additional Notes:**\n${notes}\n\n`;
 
             core.setOutput('should_update', 'true');
             core.setOutput('entry', entry);
