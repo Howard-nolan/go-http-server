@@ -11,40 +11,49 @@ Modified the workflow to extract those sections and append them to LEARNINGS.md.
 
 ## 2025-11-05 - PR #10: Added Repo Scaffolding and Config File
 
-**Change Summary:** - Added initial project scaffold and /health endpoint.
+**Change Summary:** 
+- Added initial project scaffold and /health endpoint.
 - Introduced config loading (PORT) and basic logger.
 - Implemented graceful shutdown with context and signal handling.
 
-**How It Works:** - main.go wires config, logger, and routes through a local ServeMux.
+**How It Works:** 
+- main.go wires config, logger, and routes through a local ServeMux.
 - Server listens on configurable port and shuts down cleanly on SIGINT/SIGTERM.
 
-**Additional Notes:** - Foundation for future router, structured logs, and error handling in Phase 2.
+**Additional Notes:** 
+- Foundation for future router, structured logs, and error handling in Phase 2.
 
 
 ## 2025-11-10 - PR #12: Added Chi Routing, API Stubs
 
-**Change Summary:** - Added Chi router setup to handle API routes.
+**Change Summary:** 
+- Added Chi router setup to handle API routes.
 - Created stub handlers for /v1/r/{code} and /v1/shorten endpoints to prepare for future URL redirection and shortening logic.
 - This sets the foundation for versioned API routing and future OpenAPI documentation integration.
 
-**How It Works:** - The server now initializes a Chi router in main.go, registering routes under /v1/.
+**How It Works:** 
+- The server now initializes a Chi router in main.go, registering routes under /v1/.
 - GET /v1/r/{code} will later handle redirecting a short code to its target URL.
 - POST /v1/shorten will accept a long URL in the request body and return a shortened code.
 - Both endpoints currently return placeholder JSON responses to confirm routing is functional.
 
-**Additional Notes:** - Future work: implement persistence layer for shortened URLs (e.g., MongoDB, Redis).
+**Additional Notes:** 
+- Future work: implement persistence layer for shortened URLs (e.g., MongoDB, Redis).
 - Can easily extend versioning by adding additional route groups (e.g., /v2/).
 - No functional logic yet—this MR only sets up routing and scaffolding.
 
 
 ## 2025-11-13 - PR #13: Added response.go, consistent error response
 
-**Change Summary:** - Added a response.go helper to centralize JSON response formatting.
+**Change Summary:** 
+- Added a response.go helper to centralize JSON response formatting.
 - Introduced a consistent JSON error shape used across all HTTP handlers.
 - Updated handlers to use shared helpers instead of writing responses inline.
 
-**How It Works:** - response.go has WriteJSON and WriteError functions
+**How It Works:** 
+- response.go has WriteJSON and WriteError functions
 
-**Additional Notes:** - Existing error responses have changed shape; any clients depending on the old error body format may need to be updated.
+**Additional Notes:** 
+- Existing error responses have changed shape; any clients depending on the old error body format may need to be updated.
 - Follow-up: we can extend ErrorResponse with request IDs / correlation IDs or more structured error codes if needed.
 
