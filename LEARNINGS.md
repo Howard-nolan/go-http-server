@@ -57,3 +57,12 @@ Modified the workflow to extract those sections and append them to LEARNINGS.md.
 - Existing error responses have changed shape; any clients depending on the old error body format may need to be updated.
 - Follow-up: we can extend ErrorResponse with request IDs / correlation IDs or more structured error codes if needed.
 
+
+## 2025-11-15 - PR #14: Minor GitHub Workflow Tweak
+
+**Change Summary:**
+- LEARNINGS.md formatting improvement; minor change to append-learnings.yml
+
+**How It Works:**
+- Add new line after headers in LEARNINGS.md
+
