@@ -66,3 +66,13 @@ Modified the workflow to extract those sections and append them to LEARNINGS.md.
 **How It Works:**
 - Add new line after headers in LEARNINGS.md
 
+
+## 2025-11-17 - PR #15: added openapi spec
+
+**Change Summary:**
+- Added OpenAPI spec
+
+**How It Works:**
+- openapi.yaml contains spec for three apis.
+- can be viewed locally with OpenAPI extension
+
