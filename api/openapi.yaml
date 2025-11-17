@@ -1,0 +1,77 @@
+openapi: 3.0.0
+info:
+  title: HTTP Server API
+  version: 1.0.0
+  description: API for health checks and URL shortening
+
+servers:
+  - url: http://localhost:8080
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      operationId: getHealth
+      responses:
+        '200':
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+  /v1/shorten:
+    post:
+      summary: Shorten a URL
+      operationId: shortenUrl
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - url
+                - expiry
+              properties:
+                url:
+                  type: string
+                  format: uri
+                  description: The URL to shorten
+                  example: https://example.com/some/long/url
+                expiry:
+                  type: number
+                  description: Expiry time in days
+                  example: 2
+      responses:
+        '201':
+          description: URL shortened successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  short:
+                    type: string
+                    example: https://short.example/abc123
+
+  /v1/r/{code}:
+    get:
+      summary: Redirect to original URL
+      operationId: redirectUrl
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The shortened URL code
+      responses:
+        '302':
+          description: Redirect to original URL
+        '404':
+          description: Code not found
