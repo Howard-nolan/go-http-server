@@ -76,3 +76,19 @@ Modified the workflow to extract those sections and append them to LEARNINGS.md.
 - openapi.yaml contains spec for three apis.
 - can be viewed locally with OpenAPI extension
 
+
+## 2025-11-30 - PR #16: Wire in SQLite DB; Have routes write / read from the db
+
+**Change Summary:**
+- Wired DB into handlers; shortened URLs now persist to SQLite and redirects fetch from DB.
+- Added random code generation with collision retries, URL validation/normalization, and real redirects.
+- Fixed goose embed/dialect setup and used request-aware DB calls.
+
+**How It Works:**
+- cmd/server/main.go opens ./data/app.db, runs migrations, builds a handlers.Handler with the shared *sql.DB, and registers routes.
+- ShortenHandler validates/normalizes the incoming URL (adds https:// if missing), generates a 6-char code, inserts (code, url) into links via ExecContext with retries on collisions, and returns the short link.
+- RedirectHandler looks up the URL by code using QueryRowContext; 404s if missing, otherwise issues an HTTP 302 to the stored URL.
+
+**Additional Notes:**
+- Bare hostnames like www.google.com are accepted; malformed URLs still 400.
+
