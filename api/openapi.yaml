@@ -36,7 +36,6 @@ paths:
               type: object
               required:
                 - url
-                - expiry
               properties:
                 url:
                   type: string

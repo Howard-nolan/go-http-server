@@ -13,11 +13,21 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 
 	apphttp "github.com/joeynolan/go-http-server/internal/http"
+	handlers "github.com/joeynolan/go-http-server/internal/http/handlers"
 	"github.com/joeynolan/go-http-server/internal/platform/config"
 	ilog "github.com/joeynolan/go-http-server/internal/platform/log"
+
+	db "github.com/joeynolan/go-http-server/internal/db"
 )
 
 func main() {
+	sqlDB, err := db.OpenAndMigrate("./data/app.db")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to open database: %v\n", err)
+		os.Exit(1)
+	}
+	defer sqlDB.Close()
+
 	// config + logger
 	cfg := config.Load()
 	logger := ilog.New()
@@ -29,7 +39,9 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	apphttp.Register(r)
+	h := handlers.NewHandler(sqlDB)
+
+	apphttp.Register(r, h)
 
 	srv := &http.Server{
 		Addr:              fmt.Sprintf(":%d", cfg.Port),

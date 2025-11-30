@@ -10,4 +10,4 @@ A lightweight Go backend service built from scratch to explore **distributed sys
 
 Run the server:
 ```bash
-go run main.go
+go run ./cmd/server
