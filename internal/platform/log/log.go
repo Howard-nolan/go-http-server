@@ -1,20 +1,41 @@
 package log
 
 import (
-	"fmt"
-	"log"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
-type Logger struct{}
+// Logger wraps a zap logger so callers can keep using familiar sugar helpers.
+type Logger struct {
+	*zap.SugaredLogger
+	base *zap.Logger
+}
 
-func New() *Logger { return &Logger{} }
+// New returns a production-ready zap logger.
+func New() *Logger {
+	cfg := zap.NewProductionConfig()
+	cfg.EncoderConfig.TimeKey = "ts"
+	cfg.EncoderConfig.MessageKey = "msg"
+	cfg.EncoderConfig.LevelKey = "level"
+	cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 
-func (l *Logger) Infof(format string, v ...any)  { log.Printf("INFO  "+format, v...) }
-func (l *Logger) Errorf(format string, v ...any) { log.Printf("ERROR "+format, v...) }
+	base, err := cfg.Build()
+	if err != nil {
+		panic(err)
+	}
 
-// Optional convenience
-func (l *Logger) Println(v ...any)          { log.Println(v...) }
-func (l *Logger) Printf(f string, v ...any) { log.Printf(f, v...) }
+	return &Logger{
+		SugaredLogger: base.Sugar(),
+		base:          base,
+	}
+}
 
-// Example usage: logger.Infof("starting on :%d", port)
-func Sprintf(f string, v ...any) string { return fmt.Sprintf(f, v...) }
+// Sync flushes any buffered log entries.
+func (l *Logger) Sync() {
+	_ = l.base.Sync()
+}
+
+// Desugar exposes the underlying structured logger.
+func (l *Logger) Desugar() *zap.Logger {
+	return l.base
+}

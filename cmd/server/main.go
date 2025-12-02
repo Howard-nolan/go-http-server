@@ -31,15 +31,16 @@ func main() {
 	// config + logger
 	cfg := config.Load()
 	logger := ilog.New()
+	defer logger.Sync()
 
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
+	r.Use(apphttp.RequestLogger(logger.Desugar()))
 	r.Use(middleware.Recoverer)
 
-	h := handlers.NewHandler(sqlDB)
+	h := handlers.NewHandler(sqlDB, logger)
 
 	apphttp.Register(r, h)
 
