@@ -36,6 +36,7 @@ func main() {
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
+	r.Use(apphttp.MetricsMiddleware)
 	r.Use(middleware.RealIP)
 	r.Use(apphttp.RequestLogger(logger.Desugar()))
 	r.Use(middleware.Recoverer)
