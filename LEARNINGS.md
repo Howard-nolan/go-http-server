@@ -92,3 +92,32 @@ Modified the workflow to extract those sections and append them to LEARNINGS.md.
 **Additional Notes:**
 - Bare hostnames like www.google.com are accepted; malformed URLs still 400.
 
+
+## 2025-12-10 - PR #17: Feature/observability
+
+**Change Summary:**
+- Observability: Integrated Zap for structured, level-based JSON logging to improve debugging capabilities.
+- Monitoring: Added a Prometheus middleware to track key Golden
+Signals (request latency and traffic volume) and exposed them via a new /metrics endpoint.
+- Local Dev Stack: Created a docker-compose.yml file to spin up a local monitoring stack (Prometheus and Grafana) alongside the application.
+- Performance: Implemented a caching layer to reduce database load for frequently accessed URL redirects.
+
+**How It Works:**
+- Metrics Middleware: A new MetricsMiddleware wraps the HTTP router. It captures the start time of every request and records:
+- http_requests_total (Counter): Labeled by method, route, and status.
+- http_request_duration_seconds (Histogram): Captures latency buckets for P99/P95 calculations.
+
+- Route Normalization: The middleware uses parameterized route names (e.g., /v1/r/{code}) rather than raw paths to prevent high-cardinality issues in Prometheus.
+
+- Docker Stack:
+- Prometheus: Configured to scrape host.docker.internal:8080/metrics every 5 seconds.
+- Grafana: Pre-provisioned to visualize the Prometheus data on port 3000.
+- Logging: Replaced standard fmt print statements with a global Zap logger configuration.
+
+**Additional Notes:**
+- Access: Grafana is available at http://localhost:3000 (default creds: admin/admin) when running docker compose up.
+
+- Trade-offs: Deferred OpenTelemetry (tracing) implementation as the current architecture is single-service and basic structured logging/metrics provide sufficient visibility for now.
+
+- Verification: Verified that the /metrics endpoint is correctly outputting Prometheus-formatted text with appropriate buckets.
+
