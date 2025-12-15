@@ -22,6 +22,7 @@ require (
 )
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/mfridman/interpolate v0.0.2 // indirect
 	github.com/prometheus/client_golang v1.23.2
