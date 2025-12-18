@@ -121,3 +121,16 @@ Signals (request latency and traffic volume) and exposed them via a new /metrics
 
 - Verification: Verified that the /metrics endpoint is correctly outputting Prometheus-formatted text with appropriate buckets.
 
+
+## 2025-12-18 - PR #18: Feature/tests and quality gates
+
+**Change Summary:**
+- Expanded coverage with table-driven handler unit tests (sqlmock) and an integration-tagged black-box test that exercises real HTTP on an in-memory DB.
+- Wired server to new middleware/logger/cache-aware handler signature and recorded supporting dependencies (prometheus, hashicorp/golang-lru, sqlmock).
+
+**How It Works:**
+- Unit tests in internal/http/handlers/handlers_test.go drive handlers through table cases with sqlmock; integration_test.go (build tag integration) spins up httptest.NewServer with in-memory SQLite to hit /v1/shorten then /v1/r/{code} end-to-end.
+
+**Additional Notes:**
+- Run integration suite with go test -tags=integration ./...; it’s skipped in default runs.
+
