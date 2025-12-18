@@ -68,7 +68,7 @@ func TestIntegration_ShortenAndRedirect(t *testing.T) {
 	}
 	code := strings.TrimPrefix(shortURL, "https://short.example/")
 	if code == "" {
-		t.Fatalf("generated code is empty")
+		t.Fatalf("no generated code")
 	}
 
 	client := &http.Client{
