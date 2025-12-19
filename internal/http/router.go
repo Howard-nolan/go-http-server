@@ -7,6 +7,7 @@ import (
 
 func Register(r chi.Router, h *handlers.Handler) {
 	r.Get("/health", handlers.HealthHandler)
+	r.Get("/readyz", h.ReadyHandler)
 	r.Get("/v1/r/{code}", h.RedirectHandler)
 	r.Post("/v1/shorten", h.ShortenHandler)
 	r.Handle("/metrics", MetricsHandler())

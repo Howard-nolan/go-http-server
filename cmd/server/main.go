@@ -45,10 +45,12 @@ func main() {
 
 	apphttp.Register(r, h)
 
+	handler := http.TimeoutHandler(r, 4*time.Second, `{"message":"timeout"}`)
 	srv := &http.Server{
-		Addr:              fmt.Sprintf(":%d", cfg.Port),
-		Handler:           r,
-		ReadHeaderTimeout: 5 * time.Second,
+		Addr:         fmt.Sprintf(":%d", cfg.Port),
+		Handler:      handler,
+		WriteTimeout: 10 * time.Second,  // Max time to write response
+		IdleTimeout:  120 * time.Second, // Keep-alive connections
 	}
 
 	logger.Infof("starting server on port %d", cfg.Port)

@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"context"
 	"database/sql"
+	"errors"
 	"net/http"
 	"strings"
 
@@ -24,6 +26,10 @@ func (h *Handler) RedirectHandler(w http.ResponseWriter, r *http.Request) {
 		err := h.DB.QueryRowContext(r.Context(), "SELECT url FROM links WHERE code = ?", code).Scan(&url)
 		if err == sql.ErrNoRows {
 			WriteError(w, http.StatusNotFound, "code not found")
+			return
+		}
+		if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+			WriteError(w, http.StatusRequestTimeout, "timeout")
 			return
 		}
 		if err != nil {

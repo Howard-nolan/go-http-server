@@ -1,10 +1,14 @@
 package handlers
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 func (h *Handler) ShortenHandler(w http.ResponseWriter, r *http.Request) {
@@ -24,6 +28,7 @@ func (h *Handler) ShortenHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var requestID string = middleware.GetReqID(r.Context())
 	// Generate a random code; insert with the URL; retry on collision
 	var code string
 	for attempts := 0; attempts < 3; attempts++ {
@@ -34,16 +39,28 @@ func (h *Handler) ShortenHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		_, err = h.DB.ExecContext(r.Context(), "INSERT INTO links (code, url) VALUES (?, ?)", code, req.URL)
-		if err == nil {
-			break
-		}
-
-		// throw an error if max attempts reached
-		if attempts == 2 {
-			WriteError(w, http.StatusInternalServerError, "failed to generate unique code")
+		res, err := h.DB.ExecContext(r.Context(), "INSERT INTO links (code, url, idempotency_key) VALUES (?, ?, ?) ON CONFLICT (idempotency_key) DO NOTHING", code, req.URL, requestID)
+		if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+			WriteError(w, http.StatusRequestTimeout, "timeout")
 			return
 		}
+
+		if err != nil {
+			if attempts == 2 {
+				WriteError(w, http.StatusInternalServerError, "failed to generate unique code")
+				return
+			}
+			continue
+		}
+
+		rows, _ := res.RowsAffected()
+		if rows == 0 {
+			if err := h.DB.QueryRowContext(r.Context(), "SELECT code FROM links WHERE idempotency_key = ?", requestID).Scan(&code); err != nil {
+				WriteError(w, http.StatusInternalServerError, "DB Access Error for Duplicate Request")
+				return
+			}
+		}
+		break
 	}
 
 	resp := map[string]string{

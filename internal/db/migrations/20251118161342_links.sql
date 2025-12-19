@@ -4,7 +4,8 @@ CREATE TABLE links (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     code TEXT NOT NULL UNIQUE,
     url TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    idempotency_key TEXT UNIQUE
 );
 -- +goose StatementEnd
 

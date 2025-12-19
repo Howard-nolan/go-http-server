@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -12,12 +13,13 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	ilog "github.com/joeynolan/go-http-server/internal/platform/log"
 )
 
 func newTestHandler(t *testing.T) (*Handler, sqlmock.Sqlmock, func()) {
 	t.Helper()
-	db, mock, err := sqlmock.New()
+	db, mock, err := sqlmock.New(sqlmock.MonitorPingsOption(true))
 	if err != nil {
 		t.Fatalf("sqlmock.New: %v", err)
 	}
@@ -36,12 +38,78 @@ func TestHealthHandler(t *testing.T) {
 	if res.StatusCode != http.StatusOK {
 		t.Fatalf("status = %d, want %d", res.StatusCode, http.StatusOK)
 	}
-	if ct := res.Header.Get("Content-Type"); ct != "application/json" {
-		t.Fatalf("content-type = %q, want application/json", ct)
+	if ct := res.Header.Get("Content-Type"); ct != "application/json; charset=utf-8" {
+		t.Fatalf("content-type = %q, want application/json; charset=utf-8", ct)
 	}
 	var body map[string]string
 	if err := json.NewDecoder(res.Body).Decode(&body); err != nil || body["status"] != "ok" {
 		t.Fatalf("body = %+v, want status ok", body)
+	}
+}
+
+func TestReadyHandler(t *testing.T) {
+	tests := []struct {
+		name       string
+		mock       func(sqlmock.Sqlmock)
+		wantStatus int
+		wantMsg    string
+	}{
+		{
+			name: "ready",
+			mock: func(m sqlmock.Sqlmock) {
+				m.ExpectPing().WillReturnError(nil)
+			},
+			wantStatus: http.StatusOK,
+		},
+		{
+			name: "db unavailable",
+			mock: func(m sqlmock.Sqlmock) {
+				m.ExpectPing().WillReturnError(errors.New("down"))
+			},
+			wantStatus: http.StatusServiceUnavailable,
+			wantMsg:    "Database unavailable",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			h, mock, cleanup := newTestHandler(t)
+			defer cleanup()
+			if tc.mock != nil {
+				tc.mock(mock)
+			}
+
+			req := httptest.NewRequest(http.MethodGet, "/ready", nil)
+			w := httptest.NewRecorder()
+			h.ReadyHandler(w, req)
+
+			res := w.Result()
+			defer res.Body.Close()
+
+			if res.StatusCode != tc.wantStatus {
+				t.Fatalf("status = %d, want %d", res.StatusCode, tc.wantStatus)
+			}
+			if ct := res.Header.Get("Content-Type"); ct != "application/json; charset=utf-8" {
+				t.Fatalf("content-type = %q, want application/json; charset=utf-8", ct)
+			}
+
+			if tc.wantMsg != "" {
+				var body ErrorResponse
+				_ = json.NewDecoder(res.Body).Decode(&body)
+				if body.Message != tc.wantMsg {
+					t.Fatalf("msg = %q, want %q", body.Message, tc.wantMsg)
+				}
+			} else {
+				var body map[string]string
+				if err := json.NewDecoder(res.Body).Decode(&body); err != nil || body["status"] != "ok" {
+					t.Fatalf("body = %+v, want status ok", body)
+				}
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Fatalf("sql expectations: %v", err)
+			}
+		})
 	}
 }
 
@@ -50,15 +118,17 @@ func TestShortenHandler(t *testing.T) {
 		name       string
 		body       string
 		mock       func(sqlmock.Sqlmock)
+		modifyReq  func(*http.Request) *http.Request
 		wantStatus int
 		wantMsg    string
 		wantShort  bool
+		wantCode   string
 	}{
 		{
 			name: "happy path",
 			body: `{"url":"https://example.com"}`,
 			mock: func(m sqlmock.Sqlmock) {
-				m.ExpectExec(`INSERT INTO links`).WithArgs(sqlmock.AnyArg(), "https://example.com").
+				m.ExpectExec(`INSERT INTO links`).WithArgs(sqlmock.AnyArg(), "https://example.com", "").
 					WillReturnResult(sqlmock.NewResult(1, 1))
 			},
 			wantStatus: http.StatusCreated,
@@ -71,12 +141,40 @@ func TestShortenHandler(t *testing.T) {
 			body: `{"url":"https://example.com"}`,
 			mock: func(m sqlmock.Sqlmock) {
 				for i := 0; i < 3; i++ {
-					m.ExpectExec(`INSERT INTO links`).WithArgs(sqlmock.AnyArg(), "https://example.com").
+					m.ExpectExec(`INSERT INTO links`).WithArgs(sqlmock.AnyArg(), "https://example.com", "").
 						WillReturnError(errors.New("boom"))
 				}
 			},
 			wantStatus: http.StatusInternalServerError,
 			wantMsg:    "failed to generate unique code",
+		},
+		{
+			name: "db timeout",
+			body: `{"url":"https://example.com"}`,
+			mock: func(m sqlmock.Sqlmock) {
+				m.ExpectExec(`INSERT INTO links`).WithArgs(sqlmock.AnyArg(), "https://example.com", "").
+					WillReturnError(context.DeadlineExceeded)
+			},
+			wantStatus: http.StatusRequestTimeout,
+			wantMsg:    "timeout",
+		},
+		{
+			name: "idempotent duplicate",
+			body: `{"url":"https://example.com"}`,
+			mock: func(m sqlmock.Sqlmock) {
+				m.ExpectExec(`INSERT INTO links`).WithArgs(sqlmock.AnyArg(), "https://example.com", "req-123").
+					WillReturnResult(sqlmock.NewResult(1, 0))
+				m.ExpectQuery(`SELECT code FROM links WHERE idempotency_key = \?`).
+					WithArgs("req-123").
+					WillReturnRows(sqlmock.NewRows([]string{"code"}).AddRow("existing"))
+			},
+			modifyReq: func(r *http.Request) *http.Request {
+				ctx := context.WithValue(r.Context(), middleware.RequestIDKey, "req-123")
+				return r.WithContext(ctx)
+			},
+			wantStatus: http.StatusCreated,
+			wantShort:  true,
+			wantCode:   "existing",
 		},
 	}
 
@@ -89,6 +187,9 @@ func TestShortenHandler(t *testing.T) {
 			}
 
 			req := httptest.NewRequest(http.MethodPost, "/v1/shorten", strings.NewReader(tc.body))
+			if tc.modifyReq != nil {
+				req = tc.modifyReq(req)
+			}
 			w := httptest.NewRecorder()
 			h.ShortenHandler(w, req)
 
@@ -102,8 +203,13 @@ func TestShortenHandler(t *testing.T) {
 			if tc.wantShort {
 				var body map[string]string
 				_ = json.NewDecoder(res.Body).Decode(&body)
-				if !strings.HasPrefix(body["short"], "https://short.example/") {
-					t.Fatalf("short = %q, want https://short.example/...", body["short"])
+				short := body["short"]
+				if tc.wantCode != "" {
+					if short != fmt.Sprintf("https://short.example/%s", tc.wantCode) {
+						t.Fatalf("short = %q, want https://short.example/%s", short, tc.wantCode)
+					}
+				} else if !strings.HasPrefix(short, "https://short.example/") {
+					t.Fatalf("short = %q, want https://short.example/...", short)
 				}
 			}
 			if tc.wantMsg != "" {
@@ -171,6 +277,17 @@ func TestRedirectHandler(t *testing.T) {
 			},
 			wantStatus: http.StatusInternalServerError,
 			wantMsg:    "lookup failed",
+		},
+		{
+			name: "db timeout",
+			code: "slow",
+			mock: func(m sqlmock.Sqlmock) {
+				m.ExpectQuery(`SELECT url FROM links WHERE code = \?`).
+					WithArgs("slow").
+					WillReturnError(context.DeadlineExceeded)
+			},
+			wantStatus: http.StatusRequestTimeout,
+			wantMsg:    "timeout",
 		},
 	}
 
