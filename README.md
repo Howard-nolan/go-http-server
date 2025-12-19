@@ -11,3 +11,14 @@ A lightweight Go backend service built from scratch to explore **distributed sys
 Run the server:
 ```bash
 go run ./cmd/server
+```
+
+Run unit tests:
+```bash
+go test ./...
+```
+
+Run integration (black-box) tests:
+```bash
+go test -tags=integration ./...
+```
