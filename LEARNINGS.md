@@ -134,3 +134,19 @@ Signals (request latency and traffic volume) and exposed them via a new /metrics
 **Additional Notes:**
 - Run integration suite with go test -tags=integration ./...; it’s skipped in default runs.
 
+
+## 2025-12-19 - PR #19: Better Timeout Logic; Added Idempotency Key to DB
+
+**Change Summary:**
+- Added request timeouts, readiness endpoint, and cache-aware handlers with idempotent shorten inserts; wrapped the server in http.TimeoutHandler and handled DB timeouts explicitly.
+- Introduced idempotency key support (schema + insert logic) and documented readiness in OpenAPI; added ready route, updated README with test commands.
+- Expanded tests: handler unit tests now cover timeouts/idempotency and redirect timeouts; integration test runs against in-memory DB.
+
+**How It Works:**
+- ShortenHandler reads the request ID as an idempotency key, uses ExecContext with an upsert-by-key, returns 408 on context cancel, and reuses the existing code on conflict.
+- RedirectHandler checks cache, then QueryRowContext; returns 408 on context cancellation, 404 on miss.
+- /readyz pings the DB with PingContext; server wraps the router with http.TimeoutHandler. Schema includes a unique idempotency_key on links.
+
+**Additional Notes:**
+- Integration tests run with go test -tags=integration ./...; unit tests via go test ./....
+
