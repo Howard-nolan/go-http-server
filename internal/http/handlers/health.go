@@ -11,7 +11,7 @@ func HealthHandler(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) ReadyHandler(w http.ResponseWriter, r *http.Request) {
 	if err := h.DB.PingContext(r.Context()); err != nil {
-		WriteError(w, http.StatusServiceUnavailable, "Database unavailable")
+		WriteError(w, http.StatusServiceUnavailable, "Database currently unavailable")
 		return
 	}
 	resp := map[string]string{"status": "ok"}
