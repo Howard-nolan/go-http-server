@@ -64,7 +64,7 @@ func (h *Handler) ShortenHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := map[string]string{
-		"short": fmt.Sprintf("https://short.example/%s", code), // generated value
+		"short": fmt.Sprintf("%s/%s", h.BaseURL, code), // generated value
 	}
 	WriteJSON(w, http.StatusCreated, resp)
 }

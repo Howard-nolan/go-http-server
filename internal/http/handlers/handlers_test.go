@@ -17,13 +17,15 @@ import (
 	ilog "github.com/joeynolan/go-http-server/internal/platform/log"
 )
 
+const testBaseURL = "https://jnshorter.com"
+
 func newTestHandler(t *testing.T) (*Handler, sqlmock.Sqlmock, func()) {
 	t.Helper()
 	db, mock, err := sqlmock.New(sqlmock.MonitorPingsOption(true))
 	if err != nil {
 		t.Fatalf("sqlmock.New: %v", err)
 	}
-	return NewHandler(db, ilog.New()), mock, func() { _ = db.Close() }
+	return NewHandler(db, ilog.New(), testBaseURL), mock, func() { _ = db.Close() }
 }
 
 func TestHealthHandler(t *testing.T) {
@@ -205,11 +207,11 @@ func TestShortenHandler(t *testing.T) {
 				_ = json.NewDecoder(res.Body).Decode(&body)
 				short := body["short"]
 				if tc.wantCode != "" {
-					if short != fmt.Sprintf("https://short.example/%s", tc.wantCode) {
-						t.Fatalf("short = %q, want https://short.example/%s", short, tc.wantCode)
+					if short != fmt.Sprintf("%s/%s", testBaseURL, tc.wantCode) {
+						t.Fatalf("short = %q, want %s/%s", short, testBaseURL, tc.wantCode)
 					}
-				} else if !strings.HasPrefix(short, "https://short.example/") {
-					t.Fatalf("short = %q, want https://short.example/...", short)
+				} else if !strings.HasPrefix(short, testBaseURL+"/") {
+					t.Fatalf("short = %q, want %s/...", short, testBaseURL)
 				}
 			}
 			if tc.wantMsg != "" {

@@ -16,6 +16,8 @@ import (
 	ilog "github.com/joeynolan/go-http-server/internal/platform/log"
 )
 
+const testBaseURL = "https://jnshorter.com"
+
 func startIntegrationServer(t *testing.T) (*httptest.Server, func()) {
 	t.Helper()
 
@@ -29,7 +31,7 @@ func startIntegrationServer(t *testing.T) (*httptest.Server, func()) {
 	r := chi.NewRouter()
 	r.Use(apphttp.MetricsMiddleware)
 	r.Use(apphttp.RequestLogger(logger.Desugar()))
-	h := handlers.NewHandler(sqlDB, logger)
+	h := handlers.NewHandler(sqlDB, logger, testBaseURL)
 	apphttp.Register(r, h)
 
 	srv := httptest.NewServer(r)
@@ -63,10 +65,10 @@ func TestIntegration_ShortenAndRedirect(t *testing.T) {
 		t.Fatalf("decode shorten response: %v", err)
 	}
 	shortURL := shortenResp["short"]
-	if !strings.HasPrefix(shortURL, "https://short.example/") {
-		t.Fatalf("short url = %q, want https://short.example/...", shortURL)
+	if !strings.HasPrefix(shortURL, testBaseURL+"/") {
+		t.Fatalf("short url = %q, want %s/...", shortURL, testBaseURL)
 	}
-	code := strings.TrimPrefix(shortURL, "https://short.example/")
+	code := strings.TrimPrefix(shortURL, testBaseURL+"/")
 	if code == "" {
 		t.Fatalf("no generated code")
 	}

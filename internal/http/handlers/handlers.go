@@ -2,22 +2,25 @@ package handlers
 
 import (
 	"database/sql"
+	"strings"
 
 	lru "github.com/hashicorp/golang-lru/v2"
 	ilog "github.com/joeynolan/go-http-server/internal/platform/log"
 )
 
 type Handler struct {
-	DB    *sql.DB
-	Log   *ilog.Logger
-	cache *lru.Cache[string, string]
+	DB      *sql.DB
+	Log     *ilog.Logger
+	cache   *lru.Cache[string, string]
+	BaseURL string
 }
 
-func NewHandler(db *sql.DB, logger *ilog.Logger) *Handler {
+func NewHandler(db *sql.DB, logger *ilog.Logger, baseURL string) *Handler {
 	cache, _ := lru.New[string, string](32)
 	return &Handler{
-		DB:    db,
-		Log:   logger,
-		cache: cache,
+		DB:      db,
+		Log:     logger,
+		cache:   cache,
+		BaseURL: strings.TrimRight(baseURL, "/"),
 	}
 }
