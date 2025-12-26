@@ -150,3 +150,12 @@ Signals (request latency and traffic volume) and exposed them via a new /metrics
 **Additional Notes:**
 - Integration tests run with go test -tags=integration ./...; unit tests via go test ./....
 
+
+## 2025-12-26 - PR #20: Updated Readme
+
+**Change Summary:**
+- Updated README to reflect latest status of the project
+
+**How It Works:**
+- LEARNINGS.md still linked. Additional commands added.
+
