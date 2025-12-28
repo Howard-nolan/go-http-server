@@ -21,17 +21,17 @@ import (
 )
 
 func main() {
-	sqlDB, err := db.OpenAndMigrate("./data/app.db")
+	// config + logger
+	cfg := config.Load()
+	logger := ilog.New()
+	defer logger.Sync()
+
+	sqlDB, err := db.OpenAndMigrate(cfg.DbPath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to open database: %v\n", err)
 		os.Exit(1)
 	}
 	defer sqlDB.Close()
-
-	// config + logger
-	cfg := config.Load()
-	logger := ilog.New()
-	defer logger.Sync()
 
 	r := chi.NewRouter()
 
@@ -41,7 +41,7 @@ func main() {
 	r.Use(apphttp.RequestLogger(logger.Desugar()))
 	r.Use(middleware.Recoverer)
 
-	h := handlers.NewHandler(sqlDB, logger)
+	h := handlers.NewHandler(sqlDB, logger, cfg.BaseURL)
 
 	apphttp.Register(r, h)
 

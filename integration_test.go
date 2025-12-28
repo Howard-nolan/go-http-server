@@ -16,6 +16,8 @@ import (
 	ilog "github.com/joeynolan/go-http-server/internal/platform/log"
 )
 
+const testBaseURL = "https://jnshorter.com"
+
 func startIntegrationServer(t *testing.T) (*httptest.Server, func()) {
 	t.Helper()
 
@@ -29,7 +31,7 @@ func startIntegrationServer(t *testing.T) (*httptest.Server, func()) {
 	r := chi.NewRouter()
 	r.Use(apphttp.MetricsMiddleware)
 	r.Use(apphttp.RequestLogger(logger.Desugar()))
-	h := handlers.NewHandler(sqlDB, logger)
+	h := handlers.NewHandler(sqlDB, logger, testBaseURL)
 	apphttp.Register(r, h)
 
 	srv := httptest.NewServer(r)
@@ -48,9 +50,9 @@ func TestIntegration_ShortenAndRedirect(t *testing.T) {
 	defer cleanup()
 
 	shortenReq := `{"url":"example.com"}`
-	res, err := http.Post(srv.URL+"/v1/shorten", "application/json", strings.NewReader(shortenReq))
+	res, err := http.Post(srv.URL+"/shorten", "application/json", strings.NewReader(shortenReq))
 	if err != nil {
-		t.Fatalf("POST /v1/shorten: %v", err)
+		t.Fatalf("POST /shorten: %v", err)
 	}
 	defer res.Body.Close()
 
@@ -63,10 +65,10 @@ func TestIntegration_ShortenAndRedirect(t *testing.T) {
 		t.Fatalf("decode shorten response: %v", err)
 	}
 	shortURL := shortenResp["short"]
-	if !strings.HasPrefix(shortURL, "https://short.example/") {
-		t.Fatalf("short url = %q, want https://short.example/...", shortURL)
+	if !strings.HasPrefix(shortURL, testBaseURL+"/r/") {
+		t.Fatalf("short url = %q, want %s/r/...", shortURL, testBaseURL)
 	}
-	code := strings.TrimPrefix(shortURL, "https://short.example/")
+	code := strings.TrimPrefix(shortURL, testBaseURL+"/r/")
 	if code == "" {
 		t.Fatalf("no generated code")
 	}
@@ -78,9 +80,9 @@ func TestIntegration_ShortenAndRedirect(t *testing.T) {
 		},
 	}
 
-	redirectRes, err := client.Get(srv.URL + "/v1/r/" + code)
+	redirectRes, err := client.Get(srv.URL + "/r/" + code)
 	if err != nil {
-		t.Fatalf("GET /v1/r/%s: %v", code, err)
+		t.Fatalf("GET /r/%s: %v", code, err)
 	}
 	defer redirectRes.Body.Close()
 
