@@ -14,8 +14,8 @@ type Config struct {
 func Load() Config {
 	return Config{
 		Port:    envInt("PORT", 8080),
-		DbPath:  envStr("DB_PATH", "./data/app.db"),
-		BaseURL: envStr("BASE_URL", "https://jnshorter.com"),
+		DbPath:  envStr("DB_PATH", "/tmp/app.db"),
+		BaseURL: envStr("BASE_URL", "http://localhost:8080"),
 	}
 }
 

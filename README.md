@@ -30,21 +30,21 @@ PORT=9090 go run ./cmd/server
 ## API
 
 Endpoints:
-- `POST /v1/shorten` create a short URL
-- `GET /v1/r/{code}` redirect to original URL
+- `POST /shorten` create a short URL
+- `GET /r/{code}` redirect to original URL
 - `GET /health` and `GET /readyz` for liveness/readiness
 - `GET /metrics` Prometheus scrape
 
 Example:
 ```bash
-curl -X POST http://localhost:8080/v1/shorten \
+curl -X POST http://localhost:8080/shorten \
   -H 'Content-Type: application/json' \
   -d '{"url":"https://example.com"}'
 ```
 
 Response:
 ```json
-{"short":"https://short.example/abc123"}
+{"short":"https://short.example/r/abc123"}
 ```
 
 Full OpenAPI spec: `api/openapi.yaml`
@@ -56,6 +56,7 @@ Start the monitoring stack (Prometheus + Grafana):
 docker compose up
 ```
 
+- App: http://localhost:8080 (metrics at http://localhost:8080/metrics)
 - Prometheus: http://localhost:9090
 - Grafana: http://localhost:3000 (admin/admin)
 

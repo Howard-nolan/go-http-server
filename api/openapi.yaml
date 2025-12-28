@@ -50,7 +50,7 @@ paths:
                     type: string
                     example: Database unavailable
 
-  /v1/shorten:
+  /shorten:
     post:
       summary: Shorten a URL
       operationId: shortenUrl
@@ -82,9 +82,9 @@ paths:
                 properties:
                   short:
                     type: string
-                    example: https://short.example/abc123
+                    example: https://short.example/r/abc123
 
-  /v1/r/{code}:
+  /r/{code}:
     get:
       summary: Redirect to original URL
       operationId: redirectUrl
@@ -100,3 +100,15 @@ paths:
           description: Redirect to original URL
         '404':
           description: Code not found
+
+  /metrics:
+    get:
+      summary: Prometheus metrics
+      operationId: getMetrics
+      responses:
+        '200':
+          description: Prometheus metrics text format
+          content:
+            text/plain; version=0.0.4:
+              schema:
+                type: string

@@ -188,7 +188,7 @@ func TestShortenHandler(t *testing.T) {
 				tc.mock(mock)
 			}
 
-			req := httptest.NewRequest(http.MethodPost, "/v1/shorten", strings.NewReader(tc.body))
+			req := httptest.NewRequest(http.MethodPost, "/shorten", strings.NewReader(tc.body))
 			if tc.modifyReq != nil {
 				req = tc.modifyReq(req)
 			}
@@ -207,11 +207,11 @@ func TestShortenHandler(t *testing.T) {
 				_ = json.NewDecoder(res.Body).Decode(&body)
 				short := body["short"]
 				if tc.wantCode != "" {
-					if short != fmt.Sprintf("%s/%s", testBaseURL, tc.wantCode) {
-						t.Fatalf("short = %q, want %s/%s", short, testBaseURL, tc.wantCode)
+					if short != fmt.Sprintf("%s/r/%s", testBaseURL, tc.wantCode) {
+						t.Fatalf("short = %q, want %s/r/%s", short, testBaseURL, tc.wantCode)
 					}
-				} else if !strings.HasPrefix(short, testBaseURL+"/") {
-					t.Fatalf("short = %q, want %s/...", short, testBaseURL)
+				} else if !strings.HasPrefix(short, testBaseURL+"/r/") {
+					t.Fatalf("short = %q, want %s/r/...", short, testBaseURL)
 				}
 			}
 			if tc.wantMsg != "" {
@@ -304,7 +304,7 @@ func TestRedirectHandler(t *testing.T) {
 				h.cache.Add(k, v)
 			}
 
-			req := httptest.NewRequest(http.MethodGet, "/v1/r/"+tc.code, nil)
+			req := httptest.NewRequest(http.MethodGet, "/r/"+tc.code, nil)
 			routeCtx := chi.NewRouteContext()
 			routeCtx.URLParams.Add("code", tc.code)
 			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, routeCtx))

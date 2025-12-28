@@ -28,13 +28,13 @@ Modified the workflow to extract those sections and append them to LEARNINGS.md.
 
 **Change Summary:** 
 - Added Chi router setup to handle API routes.
-- Created stub handlers for /v1/r/{code} and /v1/shorten endpoints to prepare for future URL redirection and shortening logic.
+- Created stub handlers for /r/{code} and /shorten endpoints to prepare for future URL redirection and shortening logic.
 - This sets the foundation for versioned API routing and future OpenAPI documentation integration.
 
 **How It Works:** 
-- The server now initializes a Chi router in main.go, registering routes under /v1/.
-- GET /v1/r/{code} will later handle redirecting a short code to its target URL.
-- POST /v1/shorten will accept a long URL in the request body and return a shortened code.
+- The server now initializes a Chi router in main.go, registering routes under /.
+- GET /r/{code} will later handle redirecting a short code to its target URL.
+- POST /shorten will accept a long URL in the request body and return a shortened code.
 - Both endpoints currently return placeholder JSON responses to confirm routing is functional.
 
 **Additional Notes:** 
@@ -107,7 +107,7 @@ Signals (request latency and traffic volume) and exposed them via a new /metrics
 - http_requests_total (Counter): Labeled by method, route, and status.
 - http_request_duration_seconds (Histogram): Captures latency buckets for P99/P95 calculations.
 
-- Route Normalization: The middleware uses parameterized route names (e.g., /v1/r/{code}) rather than raw paths to prevent high-cardinality issues in Prometheus.
+- Route Normalization: The middleware uses parameterized route names (e.g., /r/{code}) rather than raw paths to prevent high-cardinality issues in Prometheus.
 
 - Docker Stack:
 - Prometheus: Configured to scrape host.docker.internal:8080/metrics every 5 seconds.
@@ -129,7 +129,7 @@ Signals (request latency and traffic volume) and exposed them via a new /metrics
 - Wired server to new middleware/logger/cache-aware handler signature and recorded supporting dependencies (prometheus, hashicorp/golang-lru, sqlmock).
 
 **How It Works:**
-- Unit tests in internal/http/handlers/handlers_test.go drive handlers through table cases with sqlmock; integration_test.go (build tag integration) spins up httptest.NewServer with in-memory SQLite to hit /v1/shorten then /v1/r/{code} end-to-end.
+- Unit tests in internal/http/handlers/handlers_test.go drive handlers through table cases with sqlmock; integration_test.go (build tag integration) spins up httptest.NewServer with in-memory SQLite to hit /shorten then /r/{code} end-to-end.
 
 **Additional Notes:**
 - Run integration suite with go test -tags=integration ./...; it’s skipped in default runs.
@@ -158,4 +158,3 @@ Signals (request latency and traffic volume) and exposed them via a new /metrics
 
 **How It Works:**
 - LEARNINGS.md still linked. Additional commands added.
-

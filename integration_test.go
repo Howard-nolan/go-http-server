@@ -50,9 +50,9 @@ func TestIntegration_ShortenAndRedirect(t *testing.T) {
 	defer cleanup()
 
 	shortenReq := `{"url":"example.com"}`
-	res, err := http.Post(srv.URL+"/v1/shorten", "application/json", strings.NewReader(shortenReq))
+	res, err := http.Post(srv.URL+"/shorten", "application/json", strings.NewReader(shortenReq))
 	if err != nil {
-		t.Fatalf("POST /v1/shorten: %v", err)
+		t.Fatalf("POST /shorten: %v", err)
 	}
 	defer res.Body.Close()
 
@@ -65,10 +65,10 @@ func TestIntegration_ShortenAndRedirect(t *testing.T) {
 		t.Fatalf("decode shorten response: %v", err)
 	}
 	shortURL := shortenResp["short"]
-	if !strings.HasPrefix(shortURL, testBaseURL+"/") {
-		t.Fatalf("short url = %q, want %s/...", shortURL, testBaseURL)
+	if !strings.HasPrefix(shortURL, testBaseURL+"/r/") {
+		t.Fatalf("short url = %q, want %s/r/...", shortURL, testBaseURL)
 	}
-	code := strings.TrimPrefix(shortURL, testBaseURL+"/")
+	code := strings.TrimPrefix(shortURL, testBaseURL+"/r/")
 	if code == "" {
 		t.Fatalf("no generated code")
 	}
@@ -80,9 +80,9 @@ func TestIntegration_ShortenAndRedirect(t *testing.T) {
 		},
 	}
 
-	redirectRes, err := client.Get(srv.URL + "/v1/r/" + code)
+	redirectRes, err := client.Get(srv.URL + "/r/" + code)
 	if err != nil {
-		t.Fatalf("GET /v1/r/%s: %v", code, err)
+		t.Fatalf("GET /r/%s: %v", code, err)
 	}
 	defer redirectRes.Body.Close()
 
