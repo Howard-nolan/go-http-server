@@ -158,3 +158,20 @@ Signals (request latency and traffic volume) and exposed them via a new /metrics
 
 **How It Works:**
 - LEARNINGS.md still linked. Additional commands added.
+
+## 2025-12-28 - PR #21: Feature/deploy
+
+**Change Summary:**
+- Added DB_PATH and BASE_URL config plumbing; handlers now build short URLs from BASE_URL and routes drop /v1 in favor of /shorten and /r/{code}.
+- Swapped SQLite driver to modernc.org/sqlite for CGO‑free static builds; added multi‑stage distroless Dockerfile, .dockerignore, and an app service + volume in docker-compose.yml.
+- Updated tests, OpenAPI, README, Prometheus config, and LEARNINGS to match the new paths and metrics endpoint.
+
+**How It Works:**
+- config.Load() reads PORT, DB_PATH, and BASE_URL; main opens SQLite with db.OpenAndMigrate(cfg.DbPath) and passes cfg.BaseURL into the handler.
+- Handler trims the base URL; ShortenHandler inserts a link and returns /r/{code}, while /r/{code} redirects to the original URL; /metrics exposes Prometheus text format.
+- Docker build compiles a static binary with CGO_ENABLED=0 and runs it on distroless; compose wires env vars and mounts a named volume for persistent SQLite.
+
+**Additional Notes:**
+- Default DB_PATH is app.db; compose overrides it to app.db for persistence—Cloud Run will need an explicit DB_PATH or a durable datastore.
+- OpenAPI/README examples now use /shorten, /r/{code}, and /metrics.
+
