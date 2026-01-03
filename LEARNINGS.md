@@ -175,3 +175,16 @@ Signals (request latency and traffic volume) and exposed them via a new /metrics
 - Default DB_PATH is app.db; compose overrides it to app.db for persistence—Cloud Run will need an explicit DB_PATH or a durable datastore.
 - OpenAPI/README examples now use /shorten, /r/{code}, and /metrics.
 
+
+## 2026-01-03 - PR #22: README tweaks 2
+
+**Change Summary:**
+- Minor Tweaks to README to finalize documentation for this project
+
+**How It Works:**
+- All APIs clearly listed in README with description and utility
+- Relevant commands included for starting the local api server and building the container
+
+**Additional Notes:**
+<!-- Edge cases, tradeoffs, follow-ups, links to logs/metrics, screenshots -->
+
