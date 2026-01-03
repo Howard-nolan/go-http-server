@@ -2,7 +2,7 @@
 
 A high performance URL shortener written in Go to explore distributed systems fundamentals: observability, scalability, deployment, and testing.
 
-I document what I learn from each pull request in [**LEARNINGS.md**](./LEARNINGS.md).
+👉 I document what I learn from each pull request in [**LEARNINGS.md**](./LEARNINGS.md).
 
 ---
 
