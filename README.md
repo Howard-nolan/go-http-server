@@ -1,3 +1,5 @@
+[![OpenAPI](https://img.shields.io/badge/OpenAPI-3.0-green.svg)](https://swagger.io/specification/)
+
 # Go URL Shortener
 
 A high performance URL shortener written in Go to explore distributed systems fundamentals: observability, scalability, deployment, and testing.
@@ -31,8 +33,6 @@ PORT=9090 go run ./cmd/server
 
 Endpoints:
 
-[![OpenAPI](https://img.shields.io/badge/OpenAPI-3.0-green.svg)](https://swagger.io/specification/)
-
 | Method | Endpoint    | Description                               | Status / Utility   |
 | ------ | ----------- | ----------------------------------------- | ------------------ |
 | POST   | /shorten    | Create a shortened URL from a long link   | Core API           |
@@ -41,7 +41,7 @@ Endpoints:
 | GET    | /health     | Liveness probe (Server is alive)          | Kubernetes/Health  |
 | GET    | /readyz     | Readiness probe (DB is connected)         | Kubernetes/Health  |
 
-Example:xw
+Example:
 ```bash
 curl -X POST http://localhost:8080/shorten \
   -H 'Content-Type: application/json' \
@@ -55,7 +55,7 @@ Response:
 
 Full OpenAPI spec: `api/openapi.yaml`
 
-## Observability (local)
+## Observability
 
 Start the containerized service (URL Shortener + Prometheus + Grafana):
 ```bash
